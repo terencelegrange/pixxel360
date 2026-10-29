@@ -15,9 +15,11 @@ model User {
   role          String      @default("user") @db.VarChar(20)
   status        String      @default("pending") @db.VarChar(20)
   theme         String      @default("dark") @db.VarChar(10)
+  avatar        Int?        @db.SmallInt
   created_at    DateTime    @default(now())
   updated_at    DateTime    @updatedAt
   audit_logs    AuditLog[]
+  api_keys      ApiKey[]
 
   @@map("users")
 }
@@ -36,3 +38,160 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model FeatureFlag {
+  key         String   @id @db.VarChar(50)
+  enabled     Int      @default(1) @db.TinyInt
+  label       String   @db.VarChar(100)
+  description String   @db.VarChar(255)
+
+  @@map("feature_flags")
+}
+
+model Changelog {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @db.Date
+  description String   @db.Text
+  created_at  DateTime @default(now())
+
+  @@map("changelog")
+}
+
+model RolePermission {
+  role    String @db.VarChar(20)
+  nav_key String @db.VarChar(50)
+
+  @@id([role, nav_key])
+  @@map("role_permissions")
+}
+
+model ApiKey {
+  id         Int       @id @default(autoincrement())
+  key_hash   String    @db.VarChar(64)
+  prefix     String    @unique @db.VarChar(12)
+  name       String    @db.VarChar(200)
+  contact    String    @db.VarChar(200)
+  expires_at DateTime?
+  created_by Int?
+  user       User?     @relation(fields: [created_by], references: [id], onDelete: SetNull)
+  created_at DateTime  @default(now())
+  last_used  DateTime?
+  active     Int       @default(1) @db.TinyInt
+
+  @@map("api_keys")
+}
+
+model PixxelSyncConfig {
+  id                  Int       @id @default(autoincrement())
+  server_url          String    @default("http://192.168.100.252:3000") @db.VarChar(255)
+  api_key             String?   @db.Text
+  last_sync_at        DateTime?
+  last_sync_status    String?   @db.VarChar(50)
+  last_sync_message   String?   @db.Text
+  assets_synced_count Int       @default(0)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  @@map("pixxel_sync_config")
+}
+
+model AssetClass {
+  id          String   @id @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("asset_classes")
+}
+
+model Asset {
+  id               String   @id @db.VarChar(36)
+  pixxel_asset_id  String?  @unique @db.VarChar(100)
+  name             String   @db.VarChar(255)
+  short_code       String?  @db.VarChar(50)
+  asset_class_id   String   @default("application") @db.VarChar(50)
+  type             String   @default("SaaS") @db.VarChar(50)
+  lifecycle_status String   @default("Production") @db.VarChar(50)
+  description      String?  @db.Text
+  business_owner   String?  @db.VarChar(255)
+  technical_owner  String?  @db.VarChar(255)
+  vendor           String?  @db.VarChar(255)
+  app_url          String?  @db.VarChar(500)
+  doc_url          String?  @db.VarChar(500)
+  raw_sync_data    String?  @db.LongText
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  attributes       AssetAttribute[]
+  characteristics  AssetCharacteristic[]
+
+  @@index([asset_class_id])
+  @@index([lifecycle_status])
+  @@map("assets")
+}
+
+model Attribute {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(150)
+  description    String?   @db.Text
+  asset_class_id String    @default("application") @db.VarChar(50)
+  risk_level     String    @default("High") @db.VarChar(20)
+  weight         Int       @default(5)
+  sort_order     Int       @default(0)
+  active         Int       @default(1) @db.TinyInt
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  asset_attributes AssetAttribute[]
+
+  @@index([asset_class_id])
+  @@map("attributes")
+}
+
+model AssetAttribute {
+  id           Int       @id @default(autoincrement())
+  asset_id     String    @db.VarChar(36)
+  attribute_id Int
+  status       String    @default("Not assessed") @db.VarChar(30)
+  notes        String?   @db.Text
+  updated_by   String?   @db.VarChar(150)
+  updated_at   DateTime  @default(now()) @updatedAt
+
+  asset        Asset     @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  attribute    Attribute @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
+
+  @@unique([asset_id, attribute_id])
+  @@map("asset_attributes")
+}
+
+model Characteristic {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(150)
+  description String?  @db.Text
+  risk_level  String   @default("High") @db.VarChar(20)
+  weight      Int      @default(5)
+  sort_order  Int      @default(0)
+  active      Int      @default(1) @db.TinyInt
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  asset_characteristics AssetCharacteristic[]
+
+  @@map("characteristics")
+}
+
+model AssetCharacteristic {
+  id                Int            @id @default(autoincrement())
+  asset_id          String         @db.VarChar(36)
+  characteristic_id Int
+  enabled           Int            @default(0) @db.TinyInt
+  notes             String?        @db.Text
+  updated_by        String?        @db.VarChar(150)
+  updated_at        DateTime       @default(now()) @updatedAt
+
+  asset             Asset          @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  characteristic    Characteristic @relation(fields: [characteristic_id], references: [id], onDelete: Cascade)
+
+  @@unique([asset_id, characteristic_id])
+  @@map("asset_characteristics")
+}

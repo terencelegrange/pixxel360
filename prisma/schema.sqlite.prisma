@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/sqlite-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("SQLITE_DATABASE_URL")
+}
+
+model User {
+  id            Int         @id @default(autoincrement())
+  email         String      @unique 
+  password_hash String      
+  name          String?     
+  role          String      @default("user") 
+  status        String      @default("pending") 
+  theme         String      @default("dark") 
+  avatar        Int?        
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  audit_logs    AuditLog[]
+  api_keys      ApiKey[]
+
+  @@map("users")
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  user_id     Int?
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  action      String   
+  resource    String   
+  resource_id String?  
+  details     String?  
+  ip          String?  
+  created_at  DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model FeatureFlag {
+  key         String   @id 
+  enabled     Int      @default(1) 
+  label       String   
+  description String   
+
+  @@map("feature_flags")
+}
+
+model Changelog {
+  id          Int      @id @default(autoincrement())
+  date        DateTime 
+  description String   
+  created_at  DateTime @default(now())
+
+  @@map("changelog")
+}
+
+model RolePermission {
+  role    String 
+  nav_key String 
+
+  @@id([role, nav_key])
+  @@map("role_permissions")
+}
+
+model ApiKey {
+  id         Int       @id @default(autoincrement())
+  key_hash   String    
+  prefix     String    @unique 
+  name       String    
+  contact    String    
+  expires_at DateTime?
+  created_by Int?
+  user       User?     @relation(fields: [created_by], references: [id], onDelete: SetNull)
+  created_at DateTime  @default(now())
+  last_used  DateTime?
+  active     Int       @default(1) 
+
+  @@map("api_keys")
+}
+
+model PixxelSyncConfig {
+  id                  Int       @id @default(autoincrement())
+  server_url          String    @default("http://192.168.100.252:3000") 
+  api_key             String?   
+  last_sync_at        DateTime?
+  last_sync_status    String?   
+  last_sync_message   String?   
+  assets_synced_count Int       @default(0)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  @@map("pixxel_sync_config")
+}
+
+model AssetClass {
+  id          String   @id 
+  name        String   
+  description String?  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("asset_classes")
+}
+
+model Asset {
+  id               String   @id 
+  pixxel_asset_id  String?  @unique 
+  name             String   
+  short_code       String?  
+  asset_class_id   String   @default("application") 
+  type             String   @default("SaaS") 
+  lifecycle_status String   @default("Production") 
+  description      String?  
+  business_owner   String?  
+  technical_owner  String?  
+  vendor           String?  
+  app_url          String?  
+  doc_url          String?  
+  raw_sync_data    String?  
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  attributes       AssetAttribute[]
+  characteristics  AssetCharacteristic[]
+
+  @@index([asset_class_id])
+  @@index([lifecycle_status])
+  @@map("assets")
+}
+
+model Attribute {
+  id             Int       @id @default(autoincrement())
+  name           String    
+  description    String?   
+  asset_class_id String    @default("application") 
+  risk_level     String    @default("High") 
+  weight         Int       @default(5)
+  sort_order     Int       @default(0)
+  active         Int       @default(1) 
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  asset_attributes AssetAttribute[]
+
+  @@index([asset_class_id])
+  @@map("attributes")
+}
+
+model AssetAttribute {
+  id           Int       @id @default(autoincrement())
+  asset_id     String    
+  attribute_id Int
+  status       String    @default("Not assessed") 
+  notes        String?   
+  updated_by   String?   
+  updated_at   DateTime  @default(now()) @updatedAt
+
+  asset        Asset     @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  attribute    Attribute @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
+
+  @@unique([asset_id, attribute_id])
+  @@map("asset_attributes")
+}
+
+model Characteristic {
+  id          Int      @id @default(autoincrement())
+  name        String   
+  description String?  
+  risk_level  String   @default("High") 
+  weight      Int      @default(5)
+  sort_order  Int      @default(0)
+  active      Int      @default(1) 
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  asset_characteristics AssetCharacteristic[]
+
+  @@map("characteristics")
+}
+
+model AssetCharacteristic {
+  id                Int            @id @default(autoincrement())
+  asset_id          String         
+  characteristic_id Int
+  enabled           Int            @default(0) 
+  notes             String?        
+  updated_by        String?        
+  updated_at        DateTime       @default(now()) @updatedAt
+
+  asset             Asset          @relation(fields: [asset_id], references: [id], onDelete: Cascade)
+  characteristic    Characteristic @relation(fields: [characteristic_id], references: [id], onDelete: Cascade)
+
+  @@unique([asset_id, characteristic_id])
+  @@map("asset_characteristics")
+}

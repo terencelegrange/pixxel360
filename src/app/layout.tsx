@@ -3,13 +3,13 @@ import { cookies } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Admin",
-  description: "Admin boilerplate",
+  title: "Pixxel360 — 360° Asset Security Posture",
+  description: "Comprehensive 360-degree security posture across organisational assets",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const jar = await cookies();
-  const theme = jar.get("bp_theme")?.value ?? "dark";
+  const theme = jar.get("p360_theme")?.value ?? jar.get("bp_theme")?.value ?? "dark";
 
   return (
     <html lang="en" className={`h-full ${theme === "dark" ? "dark" : ""}`}>

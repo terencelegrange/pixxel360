@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       .then((data: { navKeys: string[] }) => { if (data.navKeys) setAllowedNavKeys(data.navKeys); })
       .catch(() => { /* keep defaults */ });
 
-    const theme = document.cookie.split("; ").find((c) => c.startsWith("bp_theme="))?.split("=")[1];
+    const theme = document.cookie.split("; ").find((c) => c.startsWith("p360_theme=") || c.startsWith("bp_theme="))?.split("=")[1];
     setIsDark(theme !== "light");
 
     fetch("/api/me/profile")
@@ -60,6 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const next = isDark ? "light" : "dark";
     document.documentElement.classList.toggle("dark", next === "dark");
     setIsDark(next === "dark");
+    document.cookie = `p360_theme=${next}; path=/; max-age=31536000; SameSite=Lax`;
     await fetch("/api/me/theme", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -87,15 +88,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside className="w-60 flex-shrink-0 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-              <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-800">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center flex-shrink-0 shadow-sm shadow-indigo-500/20">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
             </div>
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">Admin</span>
-          </div>
+            <div>
+              <span className="text-base font-bold text-gray-900 dark:text-white tracking-tight">Pixxel<span className="text-indigo-600 dark:text-indigo-400">360</span></span>
+              <p className="text-[10px] text-gray-500 dark:text-slate-400 font-medium leading-none">Security Posture</p>
+            </div>
+          </Link>
         </div>
 
         {/* Nav */}

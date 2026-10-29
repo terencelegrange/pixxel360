@@ -9,6 +9,14 @@
  * Format: { date: "YYYY-MM-DD", description: "Short description of the change" }
  */
 export const CHANGELOG: { date: string; description: string }[] = [
+  { date: "2026-10-29", description: "Added Jenkinsfile.dockerhub and multi-arch Docker build configuration for Docker Hub publishing" },
+  { date: "2026-10-20", description: "Fix startup crash by decoupling edge runtime middleware from Node.js dependencies via dedicated jwt module" },
+  { date: "2026-09-05", description: "Promoted Security Quadrant to main Dashboard (/); reorganized navigation into Assets, Security Assessment (/security-assessment), and Reports (Applications 360)" },
+  { date: "2026-09-04", description: "Added Applications 360 report (/reports/applications) featuring asset search, concentric radial rings progress gauge for attribute categories, and interactive word cloud for inherent exposure characteristics" },
+  { date: "2026-09-03", description: "Launched Pixxel360 360-degree security posture platform with Pixxel API synchronization, configurable security attributes and inherent characteristics, asset risk assessment, and interactive Gartner-style security quadrant" },
+  { date: "2026-09-03", description: "Added Sync to Pixxel settings tile with API key authentication, connection testing, and automated asset attribute binding" },
+  { date: "2026-09-03", description: "Added Security Attributes and Inherent Characteristics management tiles with customizable risk levels and weights" },
+  { date: "2026-09-03", description: "Added interactive Gartner-style Security Quadrant report plotting Inherent Exposure against Critical Security Control Deficiencies" },
   { date: "2026-08-04", description: "Removed site monitoring / health-check feature and environment selector to restore this as a generic app template" },
   { date: "2026-06-27", description: "Add dedicated profile page with identity and password change cards; simplify top-right dropdown to navigation links" },
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken } from "@/lib/jwt";
 
 const PUBLIC = ["/login", "/signup", "/api/auth/login", "/api/auth/signup"];
 
@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("bp_token")?.value;
+  const token = req.cookies.get("p360_token")?.value ?? req.cookies.get("bp_token")?.value;
   if (!token || !(await verifyToken(token))) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

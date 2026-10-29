@@ -4,9 +4,9 @@ import { getSession } from "@/lib/auth";
 const spec = {
   openapi: "3.0.3",
   info: {
-    title: "Boilerplate Admin API",
+    title: "Pixxel360 API",
     version: "1.0.0",
-    description: "REST API for the Boilerplate admin application.",
+    description: "REST API for the Pixxel360 360-degree asset security posture platform.",
   },
   servers: [{ url: "/api", description: "Current server" }],
   components: {
@@ -14,7 +14,7 @@ const spec = {
       cookieAuth: {
         type: "apiKey",
         in: "cookie",
-        name: "bp_token",
+        name: "p360_token",
         description: "JWT session cookie set on login",
       },
     },
@@ -370,7 +370,6 @@ const spec = {
                     properties: {
                       id:          { type: "integer" },
                       date:        { type: "string", format: "date" },
-                      description: { type: "string" },
                     },
                   },
                 },
@@ -379,6 +378,80 @@ const spec = {
           },
           401: { description: "Not authenticated" },
         },
+      },
+    },
+
+    // ── Security Posture & Assets ──────────────────────────────────────
+    "/assets": {
+      get: {
+        tags: ["Assets"],
+        summary: "List all assets with risk posture",
+        description: "Returns all assets with compliance metrics, inherent exposure scores, and quadrant positions.",
+        responses: { 200: { description: "List of assets with security metrics" }, 401: { description: "Unauthorized" } },
+      },
+    },
+    "/assets/{id}": {
+      get: {
+        tags: ["Assets"],
+        summary: "Get asset details and security assessment",
+        responses: { 200: { description: "Asset details" }, 404: { description: "Not found" } },
+      },
+      patch: {
+        tags: ["Assets"],
+        summary: "Update asset security assessment and characteristics",
+        responses: { 200: { description: "Updated asset risk profile" }, 403: { description: "Forbidden" } },
+      },
+    },
+    "/reports/security-quadrant": {
+      get: {
+        tags: ["Reports"],
+        summary: "Gartner-style security quadrant data",
+        description: "Returns asset coordinates (X=Inherent Exposure, Y=Critical Deficiencies) and quadrant distributions.",
+        responses: { 200: { description: "Quadrant data" } },
+      },
+    },
+    "/reports/applications": {
+      get: {
+        tags: ["Reports"],
+        summary: "Application 360 posture with concentric rings and characteristics cloud",
+        description: "Returns categorized attribute compliance for concentric radial charts and characteristic word cloud data.",
+        responses: { 200: { description: "Application 360 data" } },
+      },
+    },
+    "/settings/pixxel-sync": {
+      get: {
+        tags: ["Settings"],
+        summary: "Get Pixxel sync configuration and status",
+        responses: { 200: { description: "Sync config" } },
+      },
+      post: {
+        tags: ["Settings"],
+        summary: "Update config, test connection, or trigger Pixxel sync",
+        responses: { 200: { description: "Action result" } },
+      },
+    },
+    "/settings/attributes": {
+      get: {
+        tags: ["Settings"],
+        summary: "List security attributes",
+        responses: { 200: { description: "List of attributes" } },
+      },
+      post: {
+        tags: ["Settings"],
+        summary: "Create a security attribute",
+        responses: { 201: { description: "Created" } },
+      },
+    },
+    "/settings/characteristics": {
+      get: {
+        tags: ["Settings"],
+        summary: "List inherent characteristics",
+        responses: { 200: { description: "List of characteristics" } },
+      },
+      post: {
+        tags: ["Settings"],
+        summary: "Create a characteristic",
+        responses: { 201: { description: "Created" } },
       },
     },
 

@@ -4,11 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { signToken, COOKIE, THEME_COOKIE } from "@/lib/auth";
 import { auditLog, getIp } from "@/lib/audit";
 
-interface UserRow {
-  id: number; email: string; password_hash: string;
-  role: string; status: string; theme: string; name: string | null;
-}
-
 export async function POST(req: NextRequest) {
   await initDb();
   const { email, password } = await req.json();
@@ -17,10 +12,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email and password required" }, { status: 400 });
   }
 
-  const rows = await prisma.$queryRaw<UserRow[]>`
-    SELECT id, email, password_hash, role, status, theme, name FROM users WHERE email = ${email} LIMIT 1
-  `;
-  const user = rows[0] ?? null;
+  const user = await prisma.user.findUnique({
+    where: { email: email.toLowerCase().trim() },
+  });
 
   if (!user || !(await verifyPassword(password, user.password_hash))) {
     await auditLog({ action: "LOGIN_FAILED", resource: "sessions", details: { email }, ip: getIp(req) });

@@ -1,10 +1,10 @@
-# Boilerplate Admin App — Claude Instructions
+# Pixxel360 — 360° Asset Security Posture Platform Instructions
 
 ## Architecture Overview
 
 **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS v3 (darkMode: "class") · Prisma 5 + MySQL · JWT (jose) · bcryptjs
 **Port:** 3333 (dev and prod)
-**Database:** `boilerplate` schema on the shared AWS RDS MySQL instance
+**Database:** `pixxel360` schema on the shared MySQL instance (192.168.100.204:3306)
 
 ### Directory Structure
 
